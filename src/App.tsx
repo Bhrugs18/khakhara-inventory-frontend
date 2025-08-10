@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Package, Factory, BarChart3, AlertTriangle } from 'lucide-react'
 
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 interface Ingredient {
@@ -26,6 +27,13 @@ interface ProductionBatch {
   id: string
   batch_number: string
   production_date: string
+  start_date: string
+  stop_date?: string
+  start_time: string
+  stop_time?: string
+  run_hours?: number
+  break_hours?: number
+  total_hours?: number
   quantity_produced: number
   ingredients_used: Record<string, number>
   quality_grade: string
@@ -386,6 +394,13 @@ function BatchesView({ batches, onAdd }: {
   const [formData, setFormData] = useState({
     batch_number: '',
     production_date: '',
+    start_date: '',
+    stop_date: '',
+    start_time: '',
+    stop_time: '',
+    run_hours: '',
+    break_hours: '',
+    total_hours: '',
     quantity_produced: '',
     quality_grade: '',
     notes: ''
@@ -396,12 +411,23 @@ function BatchesView({ batches, onAdd }: {
     onAdd({
       batch_number: formData.batch_number,
       production_date: formData.production_date,
+      start_date: formData.start_date,
+      stop_date: formData.stop_date || undefined,
+      start_time: formData.start_time,
+      stop_time: formData.stop_time || undefined,
+      run_hours: formData.run_hours ? parseFloat(formData.run_hours) : undefined,
+      break_hours: formData.break_hours ? parseFloat(formData.break_hours) : undefined,
+      total_hours: formData.total_hours ? parseFloat(formData.total_hours) : undefined,
       quantity_produced: parseFloat(formData.quantity_produced),
       ingredients_used: {},
       quality_grade: formData.quality_grade,
       notes: formData.notes || undefined
     })
-    setFormData({ batch_number: '', production_date: '', quantity_produced: '', quality_grade: '', notes: '' })
+    setFormData({ 
+      batch_number: '', production_date: '', start_date: '', stop_date: '', 
+      start_time: '', stop_time: '', run_hours: '', break_hours: '', 
+      total_hours: '', quantity_produced: '', quality_grade: '', notes: '' 
+    })
     setShowForm(false)
   }
 
@@ -440,6 +466,77 @@ function BatchesView({ batches, onAdd }: {
                     value={formData.production_date}
                     onChange={(e) => setFormData({ ...formData, production_date: e.target.value })}
                     required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="start_date">Start Date</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="stop_date">Stop Date (Optional)</Label>
+                  <Input
+                    id="stop_date"
+                    type="date"
+                    value={formData.stop_date}
+                    onChange={(e) => setFormData({ ...formData, stop_date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="start_time">Start Time</Label>
+                  <Input
+                    id="start_time"
+                    type="time"
+                    value={formData.start_time}
+                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="stop_time">Stop Time (Optional)</Label>
+                  <Input
+                    id="stop_time"
+                    type="time"
+                    value={formData.stop_time}
+                    onChange={(e) => setFormData({ ...formData, stop_time: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="run_hours">Run Hours (Optional)</Label>
+                  <Input
+                    id="run_hours"
+                    type="number"
+                    step="0.1"
+                    value={formData.run_hours}
+                    onChange={(e) => setFormData({ ...formData, run_hours: e.target.value })}
+                    placeholder="e.g. 8.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="break_hours">Break Hours (Optional)</Label>
+                  <Input
+                    id="break_hours"
+                    type="number"
+                    step="0.1"
+                    value={formData.break_hours}
+                    onChange={(e) => setFormData({ ...formData, break_hours: e.target.value })}
+                    placeholder="e.g. 1.0"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="total_hours">Total Hours (Optional)</Label>
+                  <Input
+                    id="total_hours"
+                    type="number"
+                    step="0.1"
+                    value={formData.total_hours}
+                    onChange={(e) => setFormData({ ...formData, total_hours: e.target.value })}
+                    placeholder="e.g. 9.5"
                   />
                 </div>
                 <div>
@@ -493,7 +590,9 @@ function BatchesView({ batches, onAdd }: {
             <TableHeader>
               <TableRow>
                 <TableHead>Batch Number</TableHead>
-                <TableHead>Production Date</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>Start Time</TableHead>
+                <TableHead>Total Hours</TableHead>
                 <TableHead>Quantity (kg)</TableHead>
                 <TableHead>Quality Grade</TableHead>
                 <TableHead>Notes</TableHead>
@@ -503,7 +602,9 @@ function BatchesView({ batches, onAdd }: {
               {batches.map((batch) => (
                 <TableRow key={batch.id}>
                   <TableCell className="font-medium">{batch.batch_number}</TableCell>
-                  <TableCell>{new Date(batch.production_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(batch.start_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{batch.start_time}</TableCell>
+                  <TableCell>{batch.total_hours || '-'}</TableCell>
                   <TableCell>{batch.quantity_produced}</TableCell>
                   <TableCell>
                     <Badge variant={batch.quality_grade === 'A' ? 'default' : batch.quality_grade === 'B' ? 'secondary' : 'destructive'}>
