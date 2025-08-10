@@ -1,0 +1,1 @@
+# khakhara-inventory-frontend
